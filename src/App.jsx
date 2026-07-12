@@ -275,7 +275,6 @@ export default function App() {
   const [eloModalData, setEloModalData] = useState(null);
   const [pomodoroEstudio, setPomodoroEstudio] = useState(0);
   const pomo = usePomodoroTimer(h=>setPomodoroEstudio(h));
-  const [errorMsg, setErrorMsg] = useState("");
   const [metas, setMetas] = useState(loadMetas);
   useEffect(() => { saveMetas(metas); }, [metas]);
 
@@ -338,10 +337,14 @@ export default function App() {
     const id = setInterval(check, 5 * 60 * 1000);
     return () => clearInterval(id);
   }, [remindersOn, todayRecord, esDescanso]);
+  const [toast, setToast] = useState(null); // {type:'success'|'error', msg:string}
+  function showToast(type, msg, ms=3000) {
+    setToast({ type, msg });
+    setTimeout(()=>setToast(t=>(t&&t.msg===msg?null:t)), ms);
+  }
   function showError(context, error) {
     console.error(context, error);
-    setErrorMsg(`No se pudo guardar (${context}). ${error?.message||"Revisa tu conexión."}`);
-    setTimeout(()=>setErrorMsg(""), 5000);
+    showToast("error", `No se pudo guardar (${context}). ${error?.message||"Revisa tu conexión."}`, 5000);
   }
 
   useEffect(() => { fetchData(); }, []);
@@ -417,6 +420,7 @@ export default function App() {
     const {ok,queued,error}=await upsertConCola("registros",payload,"fecha","registro del día");
     if(ok){
       setSavedMsg(`¡Registrado! +${puntos} pts`);
+      showToast("success", `Registrado · +${puntos} pts`);
       setTimeout(()=>setSavedMsg(""),3000);
       fetchData();
       if(esHoyEditar&&dayOfWeek===5){
@@ -559,7 +563,11 @@ export default function App() {
   return (
     <div className="app">
       <div className="quote-bar"><span className="quote-icon">✦</span><span>{quote}</span></div>
-      {errorMsg&&<div className="error-toast">⚠ {errorMsg}</div>}
+      {toast&&(
+        <div className="island-toast-wrap">
+          <div className={`island-toast ${toast.type}`}>{toast.type==="error"?"⚠":"✓"} {toast.msg}</div>
+        </div>
+      )}
       <header className="header">
         <div className="header-left">
           <h1 className="app-name">Areté</h1>
