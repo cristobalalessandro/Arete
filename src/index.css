@@ -57,17 +57,18 @@ body {
 }
 
 /* ─── NAV ──────────────────────────────────────────── */
-.nav { display: flex; gap: 4px; }
+.nav { display: flex; gap: 2px; flex-wrap: nowrap; overflow-x: auto; }
 .nav-btn {
-  width: 38px; height: 38px;
+  width: 30px; height: 30px;
   border: 0.5px solid rgba(255,255,255,0.08);
-  border-radius: 10px;
+  border-radius: 8px;
   background: transparent;
   color: rgba(255,255,255,0.3);
-  font-size: 16px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.15s;
   display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
 .nav-btn:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.6); }
 .nav-btn.active {
@@ -468,3 +469,357 @@ body {
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .main { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
 }
+
+/* ─── V2 ADDITIONS ─────────────────────────────────── */
+
+/* Rest badge */
+.rest-badge {
+  display: inline-block;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.8px;
+  color: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.05);
+  border-radius: 6px;
+  padding: 2px 7px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+/* Week circles */
+.week-circles {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+.day-circle-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+}
+.day-circle {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  color: rgba(255,255,255,0.2);
+  font-family: 'DM Mono', monospace;
+  transition: all 0.2s;
+}
+.day-circle.filled {
+  background: rgba(74,222,128,0.15);
+  border-color: rgba(74,222,128,0.5);
+  color: #4ade80;
+}
+.day-circle.today {
+  border-color: rgba(255,255,255,0.5);
+  color: #fff;
+}
+.day-circle.rest {
+  opacity: 0.3;
+  font-size: 9px;
+}
+.day-circle-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.2);
+}
+
+/* Condicion btns */
+.condicion-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.condicion-btn {
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 0.5px solid rgba(255,255,255,0.1);
+  background: transparent;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'DM Mono', monospace;
+}
+.condicion-btn.active {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.3);
+  color: #fff;
+}
+
+/* Pomodoro */
+.pomo-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 24px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px;
+  padding: 4px;
+}
+.pomo-tab {
+  flex: 1;
+  padding: 8px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.35);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pomo-tab.active {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+.pomo-ring-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.pomo-time {
+  position: absolute;
+  text-align: center;
+}
+.pomo-display {
+  font-family: 'Syne', sans-serif;
+  font-size: 38px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -2px;
+}
+.pomo-mode {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 1.5px;
+  margin-top: 2px;
+}
+.pomo-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.pomo-btn-main { flex: 1; }
+.pomo-btn-sec {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  border: 0.5px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.pomo-btn-sec:hover { background: rgba(255,255,255,0.06); }
+.pomo-stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.pomo-stat {
+  background: #111;
+  border: 0.5px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 14px 10px;
+  text-align: center;
+}
+.pomo-stat-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+.pomo-stat-key {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.3);
+  margin-top: 4px;
+  letter-spacing: 0.3px;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+.modal {
+  background: #161616;
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 24px;
+  width: 100%;
+  max-width: 480px;
+}
+.modal-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 18px;
+}
+.desglose-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 0.5px solid rgba(255,255,255,0.05);
+}
+.desglose-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.desglose-dot.ok { background: #4ade80; }
+.desglose-dot.fail { background: #f87171; }
+.desglose-dot.neutral { background: rgba(255,255,255,0.2); }
+.desglose-label {
+  flex: 1;
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+}
+.desglose-pts {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: rgba(255,255,255,0.3);
+}
+.desglose-total {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+}
+
+/* ─── V3 ADDITIONS ─────────────────────────────────── */
+.saludo-card { padding: 16px 0 4px; margin-bottom: 16px; }
+.saludo-text { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+.saludo-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 4px; }
+
+.rings-row { display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start; }
+.ring-card { background: #111; border: 0.5px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+.mini-stat-card { background: #111; border: 0.5px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px 14px; flex: 1; }
+.mini-stat-val { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+.mini-stat-key { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.25); letter-spacing: 1px; margin-top: 2px; }
+.mini-elo-diff { font-family: 'DM Mono', monospace; font-size: 11px; margin-top: 4px; }
+.mini-elo-diff.up { color: #4ade80; }
+.mini-elo-diff.down { color: #f87171; }
+
+.diario-textarea { width: 100%; background: transparent; border: none; color: rgba(255,255,255,0.75); font-family: 'Syne', sans-serif; font-size: 15px; line-height: 1.8; outline: none; resize: none; }
+.diario-textarea::placeholder { color: rgba(255,255,255,0.2); }
+
+/* ─── ERROR TOAST ──────────────────────────────────── */
+.error-toast {
+  margin: 0 20px;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(248,113,113,0.1);
+  border: 0.5px solid rgba(248,113,113,0.3);
+  color: #f87171;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  line-height: 1.5;
+}
+
+/* ─── DATE NAV (edición retroactiva) ───────────────── */
+.date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+  background: #111;
+  border: 0.5px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 8px 10px;
+}
+.date-nav-btn {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 0.5px solid rgba(255,255,255,0.1);
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  font-size: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.date-nav-btn:hover { background: rgba(255,255,255,0.06); }
+.date-nav-current {
+  flex: 1;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.date-nav-hoy {
+  background: rgba(255,255,255,0.08);
+  border: none;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 9px;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+}
+.date-nav-hoy:hover { color: #fff; background: rgba(255,255,255,0.14); }
+
+/* ─── SYNC / PENDING BADGE ──────────────────────────── */
+.sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: #fbbf24;
+  background: rgba(251,191,36,0.1);
+  border: 0.5px solid rgba(251,191,36,0.25);
+  border-radius: 20px;
+  padding: 3px 10px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+/* ─── CONFIG PAGE ───────────────────────────────────── */
+.config-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 0.5px solid rgba(255,255,255,0.05);
+}
+.config-row:last-child { border-bottom: none; }
+.config-row-label { font-size: 13px; color: rgba(255,255,255,0.7); }
+.config-row-sub { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 2px; font-family: 'DM Mono', monospace; }
+.config-stepper { display: flex; align-items: center; gap: 10px; }
+.config-stepper-btn {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  border: 0.5px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+.config-stepper-val { font-family: 'DM Mono', monospace; font-size: 14px; color: #fff; min-width: 34px; text-align: center; }
