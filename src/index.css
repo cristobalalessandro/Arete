@@ -26,6 +26,7 @@ body {
   align-items: center;
   gap: 10px;
   padding: 12px 20px;
+  padding-top: calc(14px + env(safe-area-inset-top, 44px));
   font-family: 'DM Mono', monospace;
   font-size: 11px;
   color: rgba(255,255,255,0.25);
@@ -188,6 +189,8 @@ body {
   padding: 18px;
   margin-bottom: 12px;
 }
+.diario-item { transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.15s; }
+.diario-item:active { transform: scale(0.97); border-color: rgba(255,255,255,0.15); }
 .chart-title {
   font-size: 13px;
   color: rgba(255,255,255,0.6);
@@ -739,7 +742,7 @@ body {
 /* ─── TOAST ESTILO DYNAMIC ISLAND ───────────────────── */
 .island-toast-wrap {
   position: fixed;
-  top: 14px;
+  top: calc(14px + env(safe-area-inset-top, 44px));
   left: 0; right: 0;
   display: flex;
   justify-content: center;
@@ -859,3 +862,20 @@ body {
   cursor: pointer;
 }
 .config-stepper-val { font-family: 'DM Mono', monospace; font-size: 14px; color: #fff; min-width: 34px; text-align: center; }
+
+.dow-picker { display: flex; gap: 6px; }
+.dow-btn {
+  flex: 1;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  border: 0.5px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.4);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s, color 0.15s, border-color 0.15s;
+}
+.dow-btn:active { transform: scale(0.88); }
+.dow-btn.on { background: #fff; color: #0a0a0a; border-color: #fff; }

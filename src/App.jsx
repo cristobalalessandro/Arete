@@ -10,13 +10,13 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const DIAS_DESCANSO = [0, 6];
+const DEFAULT_DIAS_DESCANSO = [0, 6]; // domingo=0 ... sábado=6
 const POMODORO_WORK = 50 * 60;
 const POMODORO_BREAK = 10 * 60;
 const USUARIO = "Cristóbal";
 
 // Metas personalizables: se guardan en localStorage (solo en este dispositivo).
-const DEFAULT_METAS = { sueno: 7, estudio: 4, racha: 50, gymDias: 5 };
+const DEFAULT_METAS = { sueno: 7, estudio: 4, racha: 50, gymDias: 5, diasDescanso: DEFAULT_DIAS_DESCANSO };
 const METAS_KEY = "arete_metas_v1";
 
 function loadMetas() {
@@ -237,10 +237,12 @@ function PomodoroPage({ mode, timeLeft, running, sessions, totalWork, setRunning
 export default function App() {
   const [page, setPage] = useState("home");
   const [quote] = useState(QUOTES[Math.floor(Math.random()*QUOTES.length)]);
+  const [metas, setMetas] = useState(loadMetas);
+  useEffect(() => { saveMetas(metas); }, [metas]);
   const today = new Date();
   const dayOfWeek = today.getDay();
   const todayStr = getLocalDateStr(today);
-  const esDescanso = DIAS_DESCANSO.includes(dayOfWeek);
+  const esDescanso = metas.diasDescanso.includes(dayOfWeek);
 
   const [registros, setRegistros] = useState([]);
   const [eloHistorico, setEloHistorico] = useState([]);
@@ -275,8 +277,6 @@ export default function App() {
   const [eloModalData, setEloModalData] = useState(null);
   const [pomodoroEstudio, setPomodoroEstudio] = useState(0);
   const pomo = usePomodoroTimer(h=>setPomodoroEstudio(h));
-  const [metas, setMetas] = useState(loadMetas);
-  useEffect(() => { saveMetas(metas); }, [metas]);
 
   // Cola offline: cuántos cambios están pendientes de sincronizar
   const [pendingCount, setPendingCount] = useState(() => loadPending().length);
@@ -354,7 +354,7 @@ export default function App() {
   // anterior y editar sueño/estudio/gym/peso/trote/diario de esa fecha.
   const [fechaEditar, setFechaEditar] = useState(todayStr);
   const esHoyEditar = fechaEditar === todayStr;
-  const esDescansoEditar = DIAS_DESCANSO.includes(parseLocalDate(fechaEditar).getDay());
+  const esDescansoEditar = metas.diasDescanso.includes(parseLocalDate(fechaEditar).getDay());
 
   useEffect(() => {
     const rec = registros.find(r => r.fecha === fechaEditar);
@@ -523,7 +523,7 @@ export default function App() {
     let esHoy=true;
     while(true){
       const fechaStr=getLocalDateStr(cursor);
-      const esDesc=DIAS_DESCANSO.includes(cursor.getDay());
+      const esDesc=metas.diasDescanso.includes(cursor.getDay());
       const rec=registros.find(r=>r.fecha===fechaStr);
       if(esDesc){
         // día de descanso: no suma ni corta la racha
@@ -553,7 +553,7 @@ export default function App() {
   const pesoSorted=[...pesoLog].sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
   const pesoVals=pesoSorted.map(p=>p.peso);
   const pesoMA=mediaMovil(pesoVals,7);
-  const desglose=todayRecord?calcularDesglose({sueno:todayRecord.sueno,estudio:todayRecord.estudio,gym:todayRecord.gym,sensacion:todayRecord.sensacion,esDescanso:DIAS_DESCANSO.includes(parseLocalDate(todayRecord.fecha).getDay()),metaSueno:metas.sueno,metaEstudio:metas.estudio}):null;
+  const desglose=todayRecord?calcularDesglose({sueno:todayRecord.sueno,estudio:todayRecord.estudio,gym:todayRecord.gym,sensacion:todayRecord.sensacion,esDescanso:metas.diasDescanso.includes(parseLocalDate(todayRecord.fecha).getDay()),metaSueno:metas.sueno,metaEstudio:metas.estudio}):null;
 
   const ringPts=todayRecord?.puntos||0;
   const mesActual=registros.filter(r=>r.fecha.startsWith(`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}`));
@@ -618,7 +618,7 @@ export default function App() {
                   {diasSemana.map(dow=>{
                     const rec=getRecForDow(dow);
                     const esHoy=dow===dayOfWeek;
-                    const esDesc=DIAS_DESCANSO.includes(dow);
+                    const esDesc=metas.diasDescanso.includes(dow);
                     const cumplido=rec&&rec.puntos>=metas.racha;
                     return (
                       <div key={dow} className="day-circle-col">
@@ -836,7 +836,10 @@ export default function App() {
           {/* DIARIO */}
           {page==="diario"&&(
             <div className="fade-in">
-              <div className="section-label">DIARIO · {esHoyEditar?fechaFormato:fechaEditar}</div>
+              <div className="section-label" style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span>DIARIO · {esHoyEditar?fechaFormato:fechaEditar}</span>
+                {!esHoyEditar&&<button className="date-nav-hoy" onClick={()=>setFechaEditar(todayStr)}>volver a hoy</button>}
+              </div>
               <div className="form-card">
                 <textarea
                   className="diario-textarea"
@@ -847,12 +850,21 @@ export default function App() {
                 />
                 {diarioSaved?<div className="success-msg" style={{marginTop:"10px"}}>✓ Guardado</div>:<button className="btn-primary" style={{marginTop:"12px"}} onClick={guardarDiario}>Guardar</button>}
               </div>
-              {diarioLog.filter(d=>d.fecha!==fechaEditar).slice(0,5).map(d=>(
-                <div key={d.fecha} className="chart-card" style={{marginBottom:"10px"}}>
-                  <div style={{fontSize:"10px",color:"rgba(255,255,255,0.25)",fontFamily:"monospace",marginBottom:"8px"}}>{d.fecha}</div>
+              <div className="section-label" style={{marginTop:"20px"}}>NOTAS ANTERIORES</div>
+              {diarioLog.filter(d=>d.fecha!==fechaEditar).length===0&&(
+                <div style={{fontSize:"12px",color:"rgba(255,255,255,0.25)",fontFamily:"monospace"}}>Aún no hay otras notas guardadas.</div>
+              )}
+              {diarioLog.filter(d=>d.fecha!==fechaEditar).slice(0,25).map(d=>{
+                const dd=parseLocalDate(d.fecha);
+                return (
+                <div key={d.fecha} className="chart-card diario-item" style={{marginBottom:"10px",cursor:"pointer"}} onClick={()=>setFechaEditar(d.fecha)}>
+                  <div style={{fontSize:"10px",color:"rgba(255,255,255,0.35)",fontFamily:"monospace",marginBottom:"8px",display:"flex",justifyContent:"space-between"}}>
+                    <span>{DIAS_CORTOS[dd.getDay()]} · {d.fecha}</span>
+                    <span style={{color:"rgba(255,255,255,0.2)"}}>abrir →</span>
+                  </div>
                   <div style={{fontSize:"13px",color:"rgba(255,255,255,0.55)",lineHeight:"1.6",whiteSpace:"pre-wrap"}}>{d.texto.slice(0,200)}{d.texto.length>200?"...":""}</div>
                 </div>
-              ))}
+              );})}
             </div>
           )}
 
@@ -936,6 +948,18 @@ export default function App() {
                     <button className="config-stepper-btn" onClick={()=>updateMeta("gymDias",-1,1,7)}>−</button>
                     <span className="config-stepper-val">{metas.gymDias}</span>
                     <button className="config-stepper-btn" onClick={()=>updateMeta("gymDias",1,1,7)}>+</button>
+                  </div>
+                </div>
+                <div className="config-row" style={{flexDirection:"column",alignItems:"stretch",gap:"10px"}}>
+                  <div><div className="config-row-label">🛌 Días de descanso del gym</div><div className="config-row-sub">se marcan como "descanso" automáticamente, no cuentan como falta</div></div>
+                  <div className="dow-picker">
+                    {diasSemana.map(dow=>(
+                      <button
+                        key={dow}
+                        className={`dow-btn ${metas.diasDescanso.includes(dow)?"on":""}`}
+                        onClick={()=>setMetas(m=>({...m,diasDescanso:m.diasDescanso.includes(dow)?m.diasDescanso.filter(d=>d!==dow):[...m.diasDescanso,dow]}))}
+                      >{DIAS_CORTOS[dow][0]}</button>
+                    ))}
                   </div>
                 </div>
               </div>
