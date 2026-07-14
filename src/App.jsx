@@ -388,6 +388,28 @@ export default function App() {
     setFechaEditar(nuevaFecha);
   }
 
+  const rutinaEditar = RUTINA[parseLocalDate(fechaEditar).getDay()] || null;
+
+  // Carga el detalle de ejercicios de gym (series/reps/peso) de la fecha seleccionada
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: glog, error } = await supabase.from("gym_log").select("*").eq("fecha", fechaEditar);
+      if (cancelled) return;
+      if (error) { showError("historial de gym", error); return; }
+      if (glog && glog.length > 0) {
+        const log = {};
+        glog.forEach(i => { log[i.ejercicio] = { series: i.series, reps: i.reps, peso: i.peso }; });
+        setGymLog(log);
+        setGymSaved(true);
+      } else {
+        setGymLog({});
+        setGymSaved(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [fechaEditar]);
+
   async function fetchData() {
     setLoading(true);
     try {
@@ -397,9 +419,6 @@ export default function App() {
 
       const { data: elo } = await supabase.from("elo_semanal").select("*").order("semana",{ascending:false}).limit(52);
       setEloHistorico(elo||[]);
-
-      const { data: glog } = await supabase.from("gym_log").select("*").eq("fecha",todayStr);
-      if (glog?.length>0) { const log={}; glog.forEach(i=>{log[i.ejercicio]={series:i.series,reps:i.reps,peso:i.peso};}); setGymLog(log); setGymSaved(true); }
 
       const { data: plog } = await supabase.from("peso_log").select("*").order("fecha",{ascending:false}).limit(400);
       setPesoLog(plog||[]);
@@ -439,7 +458,7 @@ export default function App() {
   }
 
   async function guardarGymLog() {
-    const entries=Object.entries(gymLog).map(([ej,v])=>({fecha:todayStr,ejercicio:ej,series:parseInt(v.series)||0,reps:parseInt(v.reps)||0,peso:parseFloat(v.peso)||0}));
+    const entries=Object.entries(gymLog).map(([ej,v])=>({fecha:fechaEditar,ejercicio:ej,series:parseInt(v.series)||0,reps:parseInt(v.reps)||0,peso:parseFloat(v.peso)||0}));
     if(!entries.length)return;
     let anyError=null, anyQueued=false;
     for(const entry of entries){
@@ -773,12 +792,20 @@ export default function App() {
           {/* GYM */}
           {page==="gym"&&(
             <div className="fade-in">
-              <div className="section-label">GYM HOY {rutinaHoy&&<span className="rutina-badge">{rutinaHoy.nombre}</span>}{esDescanso&&<span className="rutina-badge" style={{color:"rgba(255,255,255,0.3)"}}>descanso</span>}</div>
-              {esDescanso?(
-                <div className="empty-today">Hoy es día de descanso — tu cuerpo también necesita recuperarse.</div>
-              ):rutinaHoy?(
+              <div className="date-nav">
+                <button className="date-nav-btn" onClick={()=>irADia(-1)}>←</button>
+                <div className="date-nav-current">
+                  <span>{esHoyEditar?"Hoy":DIAS_CORTOS[parseLocalDate(fechaEditar).getDay()]} · {fechaEditar.slice(5)}</span>
+                  {!esHoyEditar&&<button className="date-nav-hoy" onClick={()=>setFechaEditar(todayStr)}>volver a hoy</button>}
+                </div>
+                <button className="date-nav-btn" onClick={()=>irADia(1)} disabled={esHoyEditar} style={esHoyEditar?{opacity:0.25,cursor:"default"}:{}}>→</button>
+              </div>
+              <div className="section-label">GYM {esHoyEditar?"HOY":""} {rutinaEditar&&<span className="rutina-badge">{rutinaEditar.nombre}</span>}{esDescansoEditar&&<span className="rutina-badge" style={{color:"rgba(255,255,255,0.3)"}}>descanso</span>}</div>
+              {esDescansoEditar?(
+                <div className="empty-today">{esHoyEditar?"Hoy es día de descanso — tu cuerpo también necesita recuperarse.":"Ese día estaba marcado como descanso."}</div>
+              ):rutinaEditar?(
                 <>
-                  {rutinaHoy.ejercicios.map(ej=>{
+                  {rutinaEditar.ejercicios.map(ej=>{
                     const log=gymLog[ej]||{};
                     return (
                       <div key={ej} className="ejercicio-card">
@@ -794,7 +821,7 @@ export default function App() {
                   {gymSaved?<div className="success-msg">✓ Sesión guardada</div>:<button className="btn-primary" onClick={guardarGymLog}>Guardar sesión</button>}
                 </>
               ):(
-                <div className="empty-today">No entrenas hoy — descansa y recupera.</div>
+                <div className="empty-today">{esHoyEditar?"No entrenas hoy — descansa y recupera.":"Ese día no tenías rutina programada."}</div>
               )}
             </div>
           )}
